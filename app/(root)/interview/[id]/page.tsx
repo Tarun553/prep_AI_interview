@@ -16,7 +16,7 @@ const InterviewDetails = async ({ params }: RouteParams) => {
 
   const user = await getCurrentUser();
   if (!user) {
-    redirect('/auth/sign-in');
+    redirect('/sign-in');
   }
 
   const interview = await getInterviewById(id);
