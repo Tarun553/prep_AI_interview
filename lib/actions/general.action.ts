@@ -14,6 +14,7 @@ interface Interview {
   role: string;
   type: string;
   techstack: string[];
+  questions: string[];
   // Add other interview fields as needed
 }
 
@@ -106,7 +107,7 @@ export async function createFeedback(params: CreateFeedbackParams) {
     return { success: true, feedbackId: feedbackRef.id };
   } catch (error) {
     console.error("Error saving feedback:", error);
-    return { success: false };
+    return { success: false, error };
   }
 }
 
@@ -139,36 +140,53 @@ export async function getLatestInterviews(
 ): Promise<Interview[] | null> {
   const { userId, limit = 20 } = params;
 
-  // First get all interviews ordered by createdAt
-  const interviews = await db
-    .collection("interviews")
-    .orderBy("createdAt", "desc")
-    .limit(limit * 2) // Get more to ensure we have enough after filtering
-    .get();
+  try {
+    // Get all interviews ordered by createdAt that are finalized
+    const interviews = await db
+      .collection("interviews")
+      .where("finalized", "==", true)
+      .orderBy("createdAt", "desc")
+      .limit(limit * 2) // Get more to ensure we have enough after filtering
+      .get();
 
-  // Filter in memory
-  const filteredInterviews = interviews.docs
-    .map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    } as Interview))
-    .filter((interview) => interview.finalized === true && interview.userId !== userId)
-    .slice(0, limit);
+    // Filter in memory for interviews not created by this user
+    const filteredInterviews = interviews.docs
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      } as Interview))
+      .filter((interview) => interview.userId !== userId)
+      .slice(0, limit);
 
-  return filteredInterviews;
+    return filteredInterviews;
+  } catch (error) {
+    console.error("Error getting latest interviews:", error);
+    return null;
+  }
 }
 
 export async function getInterviewsByUserId(
-  userId: string
+  userId: string | undefined | null
 ): Promise<Interview[] | null> {
-  const interviews = await db
-    .collection("interviews")
-    .where("userId", "==", userId)
-    .orderBy("createdAt", "desc")
-    .get();
+  // If userId is not provided, return empty array instead of throwing error
+  if (!userId) {
+    console.warn("getInterviewsByUserId called without userId");
+    return [];
+  }
+  
+  try {
+    const interviews = await db
+      .collection("interviews")
+      .where("userId", "==", userId)
+      .orderBy("createdAt", "desc")
+      .get();
 
-  return interviews.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Interview[];
+    return interviews.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Interview[];
+  } catch (error) {
+    console.error("Error getting interviews by userId:", error);
+    return null;
+  }
 }

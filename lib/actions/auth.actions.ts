@@ -132,3 +132,29 @@ export async function isAuthenticated() {
   const user = await getCurrentUser();
   return !!user;
 }
+
+
+
+export async function getInterviewByUserId(userId: string): Promise<Interview[] | null> {
+  if (!userId) {
+    console.error("userId is required");
+    return null;
+  }
+  
+  try {
+    const interviews = await db
+      .collection("interviews")
+      .where("userId", "==", userId)
+      .orderBy("createdAt", "desc")
+      .get();
+
+    return interviews.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Interview[];
+  } catch (error) {
+    console.error("Error getting interviews by userId:", error);
+    return null;
+  }
+}
+  
