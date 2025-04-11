@@ -12,6 +12,11 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  // Skip authentication for sign-in and sign-up pages
+  if (request.nextUrl.pathname.startsWith('/sign-in') || request.nextUrl.pathname.startsWith('/sign-up')) {
+    return NextResponse.next();
+  }
+
   // Handle preflight requests
   if (request.method === 'OPTIONS') {
     return NextResponse.next();
@@ -25,8 +30,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
-  // For client-side authentication, we'll verify the session on the client
-  // and pass through the request here
   return NextResponse.next();
 }
 
