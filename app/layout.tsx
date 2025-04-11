@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning={true} className="dark">
       <body className={`${monaSans.className} antialiased pattern`}>
         <AuthProvider>
           {children}
@@ -32,3 +32,4 @@ export default function RootLayout({
     </html>
   );
 }
+
