@@ -26,11 +26,29 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get('session')?.value;
 
   if (!sessionCookie) {
-    return NextResponse.redirect(new URL('/sign-in', request.url));
+    // Set a flag to prevent infinite redirects
+    const redirectingFromAuth = request.cookies.get('redirectingFromAuth')?.value;
+    
+    if (redirectingFromAuth) {
+      // If we're already redirecting, just pass through
+      return NextResponse.next();
+    }
+
+    // Set a flag to indicate we're redirecting
+    const response = NextResponse.redirect(new URL('/sign-in', request.url));
+    response.cookies.set('redirectingFromAuth', 'true', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 // 1 minute
+    });
+    return response;
   }
 
-  // For protected routes, pass through the request
-  return NextResponse.next();
+  // Clear the redirect flag if we have a valid session
+  const response = NextResponse.next();
+  response.cookies.delete('redirectingFromAuth');
+  return response;
 }
 
 // Configure the middleware to run on all routes except API and static files
