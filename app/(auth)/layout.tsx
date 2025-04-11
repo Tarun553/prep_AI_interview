@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { toast } from "sonner";
 
 import { isAuthenticated } from "@/lib/actions/auth.actions";
 
@@ -19,7 +18,6 @@ const AuthLayout = async ({ children }: { children: ReactNode }) => {
       </div>
     );
   } catch (error) {
-    toast.error("Failed to check authentication status");
     redirect("/sign-in");
   }
 };
