@@ -38,7 +38,7 @@ export async function middleware(request: NextRequest) {
     const response = NextResponse.redirect(new URL('/sign-in', request.url));
     response.cookies.set('redirectingFromAuth', 'true', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: request.headers.get('x-forwarded-proto') === 'https', // Use HTTPS only in production
       sameSite: 'strict',
       maxAge: 60 // 1 minute
     });
@@ -48,6 +48,18 @@ export async function middleware(request: NextRequest) {
   // Clear the redirect flag if we have a valid session
   const response = NextResponse.next();
   response.cookies.delete('redirectingFromAuth');
+  
+  // Set the session cookie domain for production
+  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+    response.cookies.set('session', sessionCookie, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      path: '/',
+      domain: '.' + process.env.NEXT_PUBLIC_VERCEL_URL
+    });
+  }
+
   return response;
 }
 

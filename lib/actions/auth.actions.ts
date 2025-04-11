@@ -21,10 +21,10 @@ export async function setSessionCookie(idToken: string) {
   cookieStore.set("session", sessionCookie, {
     maxAge: SESSION_DURATION,
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Only use secure cookies in production
-    sameSite: "strict", // More secure than 'lax'
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: "strict",
     path: "/",
-    domain: process.env.NEXT_PUBLIC_VERCEL_URL ? "." + process.env.NEXT_PUBLIC_VERCEL_URL : undefined, // Add domain if in production
+    domain: process.env.NEXT_PUBLIC_VERCEL_URL ? "." + process.env.NEXT_PUBLIC_VERCEL_URL : undefined
   });
 }
 
