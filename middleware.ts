@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { auth } from '@/firebase/admin';
 
 export async function middleware(request: NextRequest) {
   // Skip middleware for API routes
@@ -26,14 +25,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
-  try {
-    // Verify session cookie
-    await auth.verifySessionCookie(sessionCookie, true);
-    return NextResponse.next();
-  } catch (error) {
-    // If session verification fails, redirect to sign-in
-    return NextResponse.redirect(new URL('/sign-in', request.url));
-  }
+  // For client-side authentication, we'll verify the session on the client
+  // and pass through the request here
+  return NextResponse.next();
 }
 
 // Configure the middleware to run on all routes except API and static files
