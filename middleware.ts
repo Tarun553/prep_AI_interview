@@ -26,10 +26,10 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get('session')?.value;
 
   if (!sessionCookie) {
-    // If no session cookie, redirect to sign-in
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
+  // For protected routes, pass through the request
   return NextResponse.next();
 }
 
